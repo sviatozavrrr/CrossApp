@@ -9,5 +9,13 @@
 dotnet build
 dotnet run --project src/Cli
 
+### Запуск у форматі JSON (додаткове завдання)
+dotnet run --project src/Cli -- --json
+
 ## Середовище
-.NET SDK 10.0, [вкажіть вашу ОС, наприклад: Windows 11 x64]
+.NET SDK 10.0
+Windows 11 x64
+
+## Додаткове завдання (Порівняння розмірів self-contained publish)
+* **win-x64**: 153 МБ
+* **linux-x64**: 157 МБ
