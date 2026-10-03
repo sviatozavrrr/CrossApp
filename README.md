@@ -27,6 +27,7 @@ CrossApp/
 * **Збірка:** `dotnet build`
 * **Запуск (таблицею):** `dotnet run --project src/Cli`
 * **Запуск у форматі JSON (додаткове завдання):** `dotnet run --project src/Cli -- --json`
+* **Запуск з каталогу publish:** `.\src\Cli\bin\Release\net10.0\win-x64\publish\Cli.exe`
 
 ## Публікація та порівняння режимів
 | RID | Режим | Розмір publish | Потрібен встановлений runtime |
