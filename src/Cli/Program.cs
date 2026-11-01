@@ -1,52 +1,36 @@
-﻿using System;
+﻿using Core.Dto;
+using Core.Import;
+using System;
+using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Encodings.Web;
-using Core; // Підключаємо створену бібліотеку класів
 
-// 1. Отримуємо дані з бібліотеки Core (жодної логіки збору даних у Cli бути не повинно)
-EnvironmentReport report = EnvironmentInfo.Collect();
+// Налаштування для правильного виводу кирилиці в консолі Windows
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-// 2. Перевіряємо, чи передано аргумент --json
-if (args.Contains("--json"))
+// Читаємо шлях з аргументів, інакше беремо за замовчуванням
+string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
+
+if (!File.Exists(path))
 {
-    // Створюємо анонімний об'єкт для JSON, комбінуючи дані з Core та інформацію про студента/домен
-    var jsonInfo = new
+    Console.WriteLine($"Файл не знайдено: {Path.GetFullPath(path)}");
+    return 1;
+}
+
+ImportResult<ProductDto> result = ProductCsvImporter.Load(path);
+Console.WriteLine($"Завантажено записів: {result.Items.Count}");
+
+foreach (ProductDto p in result.Items.Take(5))
+{
+    Console.WriteLine($" {p.Id,-6} {p.Sku,-10} {p.Name,-26} {p.Quantity,5} {p.Unit}");
+}
+
+if (result.Errors.Count > 0)
+{
+    Console.WriteLine($"\nПропущено рядків: {result.Errors.Count}");
+    foreach (string e in result.Errors)
     {
-        Student = "Івасів Святозар, ФЕІ-37",
-        OsDescription = report.OsDescription,
-        ProcessArchitecture = report.ProcessArchitecture,
-        DetectedRid = report.DetectedRid,
-        ReportedRid = report.ReportedRid,
-        Runtime = report.FrameworkDescription,
-        AppDirectory = report.BaseDirectory,
-        Domain = "Склад (товари, партії, залишки, переміщення)"
-    };
-
-    var options = new JsonSerializerOptions 
-    { 
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping 
-    };
-
-    // Встановлюємо кодування консолі UTF-8 для правильного виводу кирилиці
-    Console.OutputEncoding = System.Text.Encoding.UTF8;
-    
-    // Серіалізація в один JSON-рядок
-    string jsonString = JsonSerializer.Serialize(jsonInfo, options);
-    Console.WriteLine(jsonString);
+        Console.WriteLine($" ! {e}");
+    }
 }
-else
-{
-    // 3. Вивід у вигляді таблиці
-    Console.WriteLine("CrossApp – інформація про середовище");
-    Console.WriteLine("Студент: Івасів Святозар, ФЕІ-37");
-    Console.WriteLine(new string('-', 52));
-    Console.WriteLine($"ОС            : {report.OsDescription}");
-    Console.WriteLine($"Runtime       : {report.FrameworkDescription}");
-    Console.WriteLine($"Архітектура   : {report.ProcessArchitecture}");
-    Console.WriteLine($"RID (визначено): {report.DetectedRid}");
-    Console.WriteLine($"RID (від .NET) : {report.ReportedRid}");
-    Console.WriteLine($"Каталог        : {report.BaseDirectory}");
-    Console.WriteLine(new string('-', 52));
-    Console.WriteLine("Предметна область: Склад (товари, партії, залишки, переміщення)");
-}
+
+return 0;
